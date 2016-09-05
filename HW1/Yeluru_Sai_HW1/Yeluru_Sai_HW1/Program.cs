@@ -22,9 +22,7 @@ namespace Yeluru_Sai_HW1
             validateBothTix(intGenAdmTix, intPremAdmTix);
 
             // Now display all the required outputs
-            displayOutputs(intGenAdmTix, intPremAdmTix);
-
-
+            calculateAndDisplayOutputs(intGenAdmTix, intPremAdmTix);
 
             //include code to pause
             Console.WriteLine("Press any key to close...");
@@ -100,7 +98,7 @@ namespace Yeluru_Sai_HW1
             }
         }
 
-        public static void displayOutputs(int intGenAdmTix, int intPremAdmTix)
+        public static void calculateAndDisplayOutputs(int intGenAdmTix, int intPremAdmTix)
         {
             // Declare constants
             const int GenAdmTixPrice = 50, PremAdmTixPrice = 75;
