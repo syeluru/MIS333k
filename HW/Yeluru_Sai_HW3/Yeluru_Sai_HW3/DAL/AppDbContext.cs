@@ -9,9 +9,11 @@ namespace Yeluru_Sai_HW3.DAL
 {
     public class AppDbContext : DbContext
     {
+        //constructor that invokes the base constructor
         public AppDbContext() : base("MyDBConnection") { }
 
-        public DbSet<Customer> Customers { get; set; }
+        //create the db set
+        public DbSet<Member> Members { get; set; }
 
 
     }

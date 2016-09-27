@@ -6,8 +6,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Yeluru_Sai_HW3.Models
 {
-    public class Customer
+    public class Member
     {
+
+        public enum Majors {
+            Accounting,
+            [Display(Name = "Business Honors")]
+            BusinessHonors,
+            Finance,
+            [Display(Name = "International Business")]
+            InternationalBusiness,
+            Management,
+            [Display(Name = "Management Information Systems")]
+            MIS,
+            Marketing,
+            [Display(Name = "Supply Chain Management")]
+            SupplyChainManagement,
+            [Display(Name = "Science and Technology Management")]
+            STM
+        };
+
         [Required(ErrorMessage = "Member ID is required.")]
         [Display(Name = "Customer ID")]
         public Int16 MemberID { get; set; }
@@ -37,15 +55,8 @@ namespace Yeluru_Sai_HW3.Models
 
         [Required(ErrorMessage = "Major is required.")]
         [Display(Name = "Major?")]
-        public String Major { get; set; }
-
-
-
-
-
-
-
-
+        [EnumDataType(typeof(Majors))]
+        public Majors McCombsMajors { get; set; }
 
     }
 }
