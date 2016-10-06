@@ -140,6 +140,10 @@ namespace Yeluru_Sai_HW4.Controllers
             //Add to viewbag
             ViewBag.AllCommittees = GetAllCommittees(@event);
             ViewBag.AllMembers = GetAllMembers(@event);
+
+            db.Entry(@event).State = EntityState.Modified;
+            db.SaveChanges();
+
             return View(@event);
         }
 
@@ -179,7 +183,7 @@ namespace Yeluru_Sai_HW4.Controllers
             List<Committee> allCommittees = query.ToList();
 
             //convert to select list
-            SelectList list = new SelectList(allCommittees, "CommitteeID", "Name", @event.SponsoringCommittee.CommitteeID);
+            SelectList list = new SelectList(allCommittees, "CommitteeID", "CommitteeName", @event.SponsoringCommittee.CommitteeID);
             return list;
         }
 
@@ -193,7 +197,7 @@ namespace Yeluru_Sai_HW4.Controllers
             List<Committee> allCommittees = query.ToList();
 
             //convert to select list
-            SelectList allCommitteesList = new SelectList(allCommittees, "CommitteeID", "Name");
+            SelectList allCommitteesList = new SelectList(allCommittees, "CommitteeID", "CommitteeName");
             return allCommitteesList;
         }
 
@@ -203,6 +207,8 @@ namespace Yeluru_Sai_HW4.Controllers
             var query = from m in db.Members
                         orderby m.Email
                         select m;
+
+
             //convert to list and execute query
             List<Member> allMembers = query.ToList();
 
@@ -218,7 +224,8 @@ namespace Yeluru_Sai_HW4.Controllers
             //convert to multiselect
             MultiSelectList allMembersList = new MultiSelectList(allMembers, "MemberID", "Email", SelectedMembers);
 
-            ViewBag.AllMembers = GetAllMembers(@event);
+            // this line is important when they do it again
+            //ViewBag.AllMembers = GetAllMembers(@event);
             return allMembersList;
         }
 

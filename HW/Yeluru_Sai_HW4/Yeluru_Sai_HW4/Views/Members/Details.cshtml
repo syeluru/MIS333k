@@ -57,8 +57,16 @@
         <dd>
             @Html.DisplayFor(model => model.McCombsMajors)
         </dd>
+        <table class="table table-bordered">
+            <tr>
+                <th>
+                    Event Title
+                </th>
+                <th>
+                    Event Date
+                </th>
+            </tr>
 
-        <table>
             @foreach (var item in Model.Events)
             {
                 <tr>
@@ -67,7 +75,10 @@
                 </tr>
             }
         </table>
+        
     </dl>
+    
+
 </div>
 <p>
     @Html.ActionLink("Edit", "Edit", new { id = Model.MemberID }) |
