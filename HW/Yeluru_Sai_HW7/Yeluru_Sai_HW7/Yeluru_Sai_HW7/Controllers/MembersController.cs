@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNet.Identity;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -6,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using Yeluru_Sai_HW7.DAL;
 using Yeluru_Sai_HW7.Models;
 
 namespace Yeluru_Sai_HW7.Controllers
@@ -16,64 +16,78 @@ namespace Yeluru_Sai_HW7.Controllers
         private AppDbContext db = new AppDbContext();
 
         // GET: Members
+        [Authorize]
         public ActionResult Index()
         {
-            return View(db.Members.ToList());
+            return View(db.Users.ToList());
         }
 
         // GET: Members/Details/5
-        public ActionResult Details(short? id)
+        [Authorize]
+        public ActionResult Details(string id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Member member = db.Members.Find(id);
-            if (member == null)
+            AppUser user = db.Users.Find(id);
+            if (user == null)
             {
                 return HttpNotFound();
             }
-            return View(member);
+            return View(user);
         }
 
-        // GET: Members/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
+        //// GET: Members/Create
+        //[Authorize]
+        //public ActionResult Create()
+        //{
+        //    return View();
+        //}
 
-        // POST: Members/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "MemberID,FirstName,LastName,Email,PhoneNumber,OKToText,McCombsMajors")] Member member)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Members.Add(member);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
+        //// POST: Members/Create
+        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[Authorize]
+        //public ActionResult Create([Bind(Include = "Id,FirstName,LastName,Email,PhoneNumber,OKToText,McCombsMajors")] AppUser user)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        db.Users.Add(user);
+        //        db.SaveChanges();
+        //        return RedirectToAction("Index");
+        //    }
 
             
-            return View(member);
-        }
+        //    return View(user);
+        //}
 
         // GET: Members/Edit/5
-        public ActionResult Edit(short? id)
+        [Authorize(Roles = "Admin, Member")]
+        public ActionResult Edit(string Id)
         {
-            if (id == null)
+            if (Id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Member member = db.Members.Find(id);
-            if (member == null)
+
+            // add an if statement to trigger a manual exception if user is trying to change someone else's character
+            if (Id != User.Identity.GetUserId<string>() && !User.IsInRole("Admin"))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+            }
+
+
+
+            AppUser user = db.Users.Find(Id);
+            if (user == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.AllEvents = GetAllEvents(member);
-            return View(member);
+            ViewBag.AllEvents = GetAllEvents(user);
+            return View(user);
         }
 
         // POST: Members/Edit/5
@@ -81,15 +95,25 @@ namespace Yeluru_Sai_HW7.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "MemberID,FirstName,LastName,Email,PhoneNumber,OKToText,McCombsMajors")] Member @member, int[] SelectedEvents)
+        [Authorize(Roles = "Admin, Member")]
+        public ActionResult Edit([Bind(Include = "Id,FirstName,LastName,Email,PhoneNumber,OKToText,McCombsMajors")] AppUser user, int[] SelectedEvents)
         {
             if (ModelState.IsValid)
             {
+
+                // add an if statement to trigger a manual exception if user is trying to change someone else's character
+                if (user.Id != User.Identity.GetUserId<string>() && !User.IsInRole("Admin"))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+                }
+
                 // Find associated member
-                Member memberToChange = db.Members.Find(@member.MemberID);
+                AppUser userToChange = db.Users.Find(user.Id);
 
                 // change events
-                memberToChange.Events.Clear();
+                userToChange.Events.Clear();
+
+
 
                 // if there are events to add, add them
                 if (SelectedEvents != null)
@@ -97,61 +121,63 @@ namespace Yeluru_Sai_HW7.Controllers
                     foreach (int selectedEventID in SelectedEvents)
                     {
                         Event eventToAdd = db.Events.Find(selectedEventID);
-                        memberToChange.Events.Add(eventToAdd);
+                        userToChange.Events.Add(eventToAdd);
                     }
                 }
 
-                memberToChange.Email = @member.Email;
-                memberToChange.FirstName = @member.FirstName;
-                memberToChange.LastName = @member.LastName;
-                memberToChange.PhoneNumber = @member.PhoneNumber;
-                memberToChange.OKToText = @member.OKToText;
-                memberToChange.McCombsMajors = @member.McCombsMajors;
+                userToChange.Email = user.Email;
+                userToChange.FirstName = user.FirstName;
+                userToChange.LastName = user.LastName;
+                userToChange.PhoneNumber = user.PhoneNumber;
+                userToChange.OKToText = user.OKToText;
+                userToChange.McCombsMajors = user.McCombsMajors;
 
-                ViewBag.AllEvents = GetAllEvents(memberToChange);
+                ViewBag.AllEvents = GetAllEvents(userToChange);
 
                 //update the db.Entry code to reflect the event you want to change and save changes
-                db.Entry(memberToChange).State = EntityState.Modified;
+                db.Entry(userToChange).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
             //repopulate lists
             //Add to viewbag
-            ViewBag.AllEvents = GetAllEvents(@member);
+            ViewBag.AllEvents = GetAllEvents(user);
             
 
-            return View(@member);
+            return View(user);
         }
 
         // GET: Members/Delete/5
-        public ActionResult Delete(short? id)
+        [Authorize(Roles = "Admin")]
+        public ActionResult Delete(string id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Member member = db.Members.Find(id);
-            if (member == null)
+            AppUser user = db.Users.Find(id);
+            if (user == null)
             {
                 return HttpNotFound();
             }
-            return View(member);
+            return View(user);
         }
 
         // POST: Members/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(short id)
+        [Authorize(Roles = "Admin")]
+        public ActionResult DeleteConfirmed(string id)
         {
-            Member member = db.Members.Find(id);
-            db.Members.Remove(member);
+            AppUser user = db.Users.Find(id);
+            db.Users.Remove(user);
             db.SaveChanges();
             return RedirectToAction("Index");
         }
             
 
-        public MultiSelectList GetAllEvents(Member @member)
+        public MultiSelectList GetAllEvents(AppUser user)
         {
             //find the list of events
             var query = from e in db.Events
@@ -165,7 +191,7 @@ namespace Yeluru_Sai_HW7.Controllers
             List<Int32> SelectedEvents = new List<Int32>();
 
             //Loop through list of events and add EventID
-            foreach (Event e in @member.Events)
+            foreach (Event e in user.Events)
             {
                 SelectedEvents.Add(e.EventID);
             }

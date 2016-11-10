@@ -33,7 +33,7 @@ namespace Yeluru_Sai_HW7.Models
         // navigational properties
         public virtual Committee SponsoringCommittee { get; set; }
 
-        public virtual List<Member> Members { get; set; }
+        public virtual List<AppUser> AppUsers { get; set; }
 
     }
 }

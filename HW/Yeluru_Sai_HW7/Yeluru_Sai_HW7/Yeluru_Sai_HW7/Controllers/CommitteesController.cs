@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using Yeluru_Sai_HW7.DAL;
 using Yeluru_Sai_HW7.Models;
 
 namespace Yeluru_Sai_HW7.Controllers
@@ -16,12 +15,14 @@ namespace Yeluru_Sai_HW7.Controllers
         private AppDbContext db = new AppDbContext();
 
         // GET: Committees
+        [Authorize]
         public ActionResult Index()
         {
             return View(db.Committees.ToList());
         }
 
         // GET: Committees/Details/5
+        [Authorize]
         public ActionResult Details(short? id)
         {
             if (id == null)
@@ -37,6 +38,7 @@ namespace Yeluru_Sai_HW7.Controllers
         }
 
         // GET: Committees/Create
+        [Authorize(Roles = "Admin")]
         public ActionResult Create()
         {
             return View();
@@ -47,6 +49,7 @@ namespace Yeluru_Sai_HW7.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Create([Bind(Include = "CommitteeID,CommitteeName")] Committee committee)
         {
             if (ModelState.IsValid)
@@ -60,6 +63,7 @@ namespace Yeluru_Sai_HW7.Controllers
         }
 
         // GET: Committees/Edit/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit(short? id)
         {
             if (id == null)
@@ -79,6 +83,7 @@ namespace Yeluru_Sai_HW7.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit([Bind(Include = "CommitteeID,CommitteeName")] Committee committee)
         {
             if (ModelState.IsValid)
@@ -91,6 +96,7 @@ namespace Yeluru_Sai_HW7.Controllers
         }
 
         // GET: Committees/Delete/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Delete(short? id)
         {
             if (id == null)
@@ -108,6 +114,7 @@ namespace Yeluru_Sai_HW7.Controllers
         // POST: Committees/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult DeleteConfirmed(short id)
         {
             Committee committee = db.Committees.Find(id);

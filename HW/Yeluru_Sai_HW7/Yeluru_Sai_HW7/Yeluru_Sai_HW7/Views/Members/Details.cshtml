@@ -1,4 +1,4 @@
-﻿@model Yeluru_Sai_HW7.Models.Member
+﻿@model Yeluru_Sai_HW7.Models.AppUser
 
 @{
     ViewBag.Title = "Details";
@@ -81,6 +81,6 @@
 
 </div>
 <p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.MemberID }) |
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
     @Html.ActionLink("Back to List", "Index")
 </p>

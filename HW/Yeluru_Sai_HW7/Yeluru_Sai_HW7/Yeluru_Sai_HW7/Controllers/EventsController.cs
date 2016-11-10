@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using Yeluru_Sai_HW7.DAL;
 using Yeluru_Sai_HW7.Models;
 
 namespace Yeluru_Sai_HW7.Controllers
@@ -39,6 +38,7 @@ namespace Yeluru_Sai_HW7.Controllers
         }
 
         // GET: Events/Create
+        [Authorize(Roles = "Admin")]
         public ActionResult Create()
         {
             ViewBag.AllCommittees = GetAllCommittees();
@@ -50,6 +50,7 @@ namespace Yeluru_Sai_HW7.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Create([Bind(Include = "EventID,EventTitle,EventDate,EventLocation,OKToText")] Event @event, Int32 CommitteeID)
         {
             //find selected committee
@@ -71,6 +72,7 @@ namespace Yeluru_Sai_HW7.Controllers
         }
 
         // GET: Events/Edit/5
+        [Authorize(Roles ="Admin")]
         public ActionResult Edit(short? id)
         {
             if (id == null)
@@ -85,7 +87,7 @@ namespace Yeluru_Sai_HW7.Controllers
 
             //Add to viewbag
             ViewBag.AllCommittees = GetAllCommittees(@event);
-            ViewBag.AllMembers = GetAllMembers(@event);
+            ViewBag.AllUsers = GetAllUsers(@event);
             return View(@event);
         }
 
@@ -94,7 +96,8 @@ namespace Yeluru_Sai_HW7.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "EventID,EventTitle,EventDate,EventLocation,MembersOnly")] Event @event, Int32 CommitteeID, int[] SelectedMembers)
+        [Authorize (Roles = "Admin")]
+        public ActionResult Edit([Bind(Include = "EventID,EventTitle,EventDate,EventLocation,MembersOnly")] Event @event, Int32 CommitteeID, string[] SelectedUsers)
         {
             if (ModelState.IsValid)
             {
@@ -112,15 +115,15 @@ namespace Yeluru_Sai_HW7.Controllers
                 }
 
                 //remove any existing members
-                eventToChange.Members.Clear();
+                eventToChange.AppUsers.Clear();
 
                 //if there are members to add, add them
-                if (SelectedMembers != null)
+                if (SelectedUsers != null)
                 {
-                    foreach (int memberID in SelectedMembers)
+                    foreach (string Id in SelectedUsers)
                     {
-                        Member memberToAdd = db.Members.Find(memberID);
-                        eventToChange.Members.Add(memberToAdd);
+                        AppUser userToAdd = db.Users.Find(Id);
+                        eventToChange.AppUsers.Add(userToAdd);
                     }
                 }
 
@@ -139,7 +142,7 @@ namespace Yeluru_Sai_HW7.Controllers
             //re-populate lists
             //Add to viewbag
             ViewBag.AllCommittees = GetAllCommittees(@event);
-            ViewBag.AllMembers = GetAllMembers(@event);
+            ViewBag.AllUsers = GetAllUsers(@event);
 
             db.Entry(@event).State = EntityState.Modified;
             db.SaveChanges();
@@ -148,6 +151,7 @@ namespace Yeluru_Sai_HW7.Controllers
         }
 
         // GET: Events/Delete/5
+        [Authorize (Roles = "Admin")]
         public ActionResult Delete(short? id)
         {
             if (id == null)
@@ -165,7 +169,8 @@ namespace Yeluru_Sai_HW7.Controllers
         // POST: Events/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(short id)
+        [Authorize(Roles = "Admin")]
+        public ActionResult DeleteConfirmed(int id)
         {
             Event @event = db.Events.Find(id);
             db.Events.Remove(@event);
@@ -201,32 +206,32 @@ namespace Yeluru_Sai_HW7.Controllers
             return allCommitteesList;
         }
 
-        public MultiSelectList GetAllMembers(Event @event)
+        public MultiSelectList GetAllUsers(Event @event)
         {
             //find the list of members
-            var query = from m in db.Members
+            var query = from m in db.Users
                         orderby m.Email
                         select m;
 
 
             //convert to list and execute query
-            List<Member> allMembers = query.ToList();
+            List<AppUser> allUsers = query.ToList();
 
             //create list of selected members
-            List<Int32> SelectedMembers = new List<Int32>();
+            List<string> SelectedUsers = new List<string>();
 
             //Loop through list of members and add MemberId
-            foreach (Member m in @event.Members)
+            foreach (AppUser m in @event.AppUsers)
             {
-                SelectedMembers.Add(m.MemberID);
+                SelectedUsers.Add(m.Id);
             }
 
             //convert to multiselect
-            MultiSelectList allMembersList = new MultiSelectList(allMembers, "MemberID", "Email", SelectedMembers);
+            MultiSelectList allUsersList = new MultiSelectList(allUsers, "Id", "Email", SelectedUsers);
 
             // this line is important when they do it again
             //ViewBag.AllMembers = GetAllMembers(@event);
-            return allMembersList;
+            return allUsersList;
         }
 
 
